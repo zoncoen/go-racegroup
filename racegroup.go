@@ -17,13 +17,15 @@ type Group struct {
 }
 
 // WithContext returns a new Group and an associated Context derived from ctx.
-func WithContext(ctx context.Context, opts ...Option) (*Group, context.Context) {
+func WithContext(ctx context.Context, opts ...Option) (*Group, context.Context, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	g := &Group{cancel: cancel}
 	for _, opt := range opts {
-		opt(g)
+		if err := opt(g); err != nil {
+			return nil, nil, err
+		}
 	}
-	return g, ctx
+	return g, ctx, nil
 }
 
 // Wait blocks until all function calls from the Go method have returned.

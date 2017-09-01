@@ -32,7 +32,7 @@ func errPrinter(err error) {
 }
 
 func ExampleGroup() {
-	g, ctx := racegroup.WithContext(context.Background())
+	g, ctx, _ := racegroup.WithContext(context.Background())
 	g.Go(wait(ctx, 2*time.Second))
 	g.Go(wait(ctx, 1*time.Second))
 	g.Wait()
@@ -42,7 +42,7 @@ func ExampleGroup() {
 }
 
 func ExampleErrorHandler() {
-	g, ctx := racegroup.WithContext(context.Background(), racegroup.ErrorHandler(errPrinter))
+	g, ctx, _ := racegroup.WithContext(context.Background(), racegroup.ErrorHandler(errPrinter))
 	g.Go(wait(ctx, 1*time.Second))
 	g.Go(errFunc())
 	g.Wait()
@@ -53,7 +53,7 @@ func ExampleErrorHandler() {
 }
 
 func ExampleConcurrency() {
-	g, ctx := racegroup.WithContext(context.Background(), racegroup.Concurrency(2))
+	g, ctx, _ := racegroup.WithContext(context.Background(), racegroup.Concurrency(2))
 	g.Go(wait(ctx, 3*time.Second))
 	g.Go(wait(ctx, 2*time.Second))
 	g.Go(wait(ctx, 1*time.Second))
