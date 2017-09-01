@@ -23,3 +23,14 @@ func Concurrency(i int) Option {
 		return nil
 	}
 }
+
+// Desired returns an Option that sets number of desired completed tasks.
+func Desired(i int) Option {
+	return func(g *Group) error {
+		if i < 1 {
+			return errors.New("desired option must be greater than zero")
+		}
+		g.desired = int64(i)
+		return nil
+	}
+}

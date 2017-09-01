@@ -62,3 +62,15 @@ func ExampleConcurrency() {
 	// Output:
 	// wait 2s
 }
+
+func ExampleDesired() {
+	g, ctx, _ := racegroup.WithContext(context.Background(), racegroup.Desired(2))
+	g.Go(wait(ctx, 3*time.Second))
+	g.Go(wait(ctx, 2*time.Second))
+	g.Go(wait(ctx, 1*time.Second))
+	g.Wait()
+
+	// Output:
+	// wait 1s
+	// wait 2s
+}

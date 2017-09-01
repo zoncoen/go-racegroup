@@ -5,6 +5,7 @@ package racegroup
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 )
 
 // A Group is a collection of goroutines working on subtasks.
@@ -14,12 +15,14 @@ type Group struct {
 
 	errHandler func(error)
 	semaphore  chan struct{}
+	desired    int64
+	completed  int64
 }
 
 // WithContext returns a new Group and an associated Context derived from ctx.
 func WithContext(ctx context.Context, opts ...Option) (*Group, context.Context, error) {
 	ctx, cancel := context.WithCancel(ctx)
-	g := &Group{cancel: cancel}
+	g := &Group{cancel: cancel, desired: 1}
 	for _, opt := range opts {
 		if err := opt(g); err != nil {
 			return nil, nil, err
@@ -38,7 +41,8 @@ func (g *Group) Wait() {
 
 // Go calls the given function in a new goroutine.
 //
-// The first call to return a nil error cancels the group.
+// If more than or equal to desired count subtasks are completed,
+// cancels the group.
 func (g *Group) Go(f func() error) {
 	g.wg.Add(1)
 	if g.semaphore != nil {
@@ -58,7 +62,9 @@ func (g *Group) Go(f func() error) {
 				g.errHandler(err)
 			}
 		} else {
-			g.cancel()
+			if atomic.AddInt64(&g.completed, 1) >= g.desired {
+				g.cancel()
+			}
 		}
 	}()
 }
