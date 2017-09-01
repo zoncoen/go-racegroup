@@ -13,6 +13,7 @@ type Group struct {
 	cancel func()
 
 	errHandler func(error)
+	semaphore  chan struct{}
 }
 
 // WithContext returns a new Group and an associated Context derived from ctx.
@@ -38,9 +39,17 @@ func (g *Group) Wait() {
 // The first call to return a nil error cancels the group.
 func (g *Group) Go(f func() error) {
 	g.wg.Add(1)
+	if g.semaphore != nil {
+		g.semaphore <- struct{}{}
+	}
 
 	go func() {
 		defer g.wg.Done()
+		defer func() {
+			if g.semaphore != nil {
+				<-g.semaphore
+			}
+		}()
 
 		if err := f(); err != nil {
 			if g.errHandler != nil {

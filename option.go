@@ -9,3 +9,10 @@ func ErrorHandler(handler func(error)) Option {
 		g.errHandler = handler
 	}
 }
+
+// Concurrency returns an Option that sets number of concurrency for goroutines.
+func Concurrency(i int) Option {
+	return func(g *Group) {
+		g.semaphore = make(chan struct{}, i)
+	}
+}

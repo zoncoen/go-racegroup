@@ -51,3 +51,14 @@ func ExampleErrorHandler() {
 	// error occurred
 	// wait 1s
 }
+
+func ExampleConcurrency() {
+	g, ctx := racegroup.WithContext(context.Background(), racegroup.Concurrency(2))
+	g.Go(wait(ctx, 3*time.Second))
+	g.Go(wait(ctx, 2*time.Second))
+	g.Go(wait(ctx, 1*time.Second))
+	g.Wait()
+
+	// Output:
+	// wait 2s
+}
